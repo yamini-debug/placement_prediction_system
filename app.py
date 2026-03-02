@@ -1,6 +1,4 @@
-# app.py
-
-from flask import Flask, request, jsonify, render_template
+import streamlit as st
 import pickle
 import numpy as np
 
@@ -9,23 +7,25 @@ model_path = 'model.pkl'
 with open(model_path, 'rb') as file:
     model = pickle.load(file)
 
-app = Flask(__name__)
+# App title
+st.title("Placement Prediction System")
 
-@app.route('/')
-def home():
-    return render_template('index.html')
+st.write("Enter the details below to check placement status.")
 
-@app.route('/predict', methods=['POST'])
-def predict():
-    # Extract data from form
-    int_features = [int(x) for x in request.form.values()]
-    final_features = [np.array(int_features)]
-    
-    # Make prediction
-    prediction = model.predict(final_features)
-    output = 'Placed' if prediction[0] == 1 else 'Not Placed'
+# Input fields (example: IQ and CGPA)
+iq = st.number_input("Enter IQ", min_value=0)
+cgpa = st.number_input("Enter CGPA", min_value=0.0, step=0.1)
 
-    return render_template('index.html', prediction_text='Prediction: {}'.format(output))
+# Predict button
+if st.button("Predict"):
 
-if __name__ == "__main__":
-    app.run(debug=True)
+    # Prepare input
+    features = np.array([[iq, cgpa]])
+
+    # Prediction
+    prediction = model.predict(features)
+
+    if prediction[0] == 1:
+        st.success("Prediction: Placed ✅")
+    else:
+        st.error("Prediction: Not Placed ❌")
